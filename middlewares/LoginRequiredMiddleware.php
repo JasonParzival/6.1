@@ -3,19 +3,18 @@
 class LoginRequiredMiddleware extends BaseMiddleware {
     public function apply(BaseController $controller, array $context)
     {
-        // заводим переменные под правильный пароль
-        $valid_user = "jason";
-        $valid_password = "2005";
-        
         // берем значения которые введет пользователь
         $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
         $password = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
-        
-        // сверяем с корректными
-        if ($valid_user != $user || $valid_password != $password) {
-            // если не совпали, надо указать такой заголовок
-            // именно по нему браузер поймет что надо показать окно для ввода юзера/пароля
-            header('WWW-Authenticate: Basic realm="Space objects"');
+
+        $query = $controller->pdo->prepare("SELECT password FROM portal_users WHERE username= :my_username");
+        $query->bindValue("my_username", $user);
+        $query->execute();
+
+        $pw_from_db = $query->fetch(PDO::FETCH_ASSOC);
+
+        if ($password != $pw_from_db['password']) {
+            header('WWW-Authenticate: Basic realm="Portal objects"');
             http_response_code(401); // ну и статус 401 -- Unauthorized, то есть неавторизован
             exit; // прерываем выполнение скрипта
         }
