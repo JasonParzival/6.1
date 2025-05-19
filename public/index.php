@@ -13,6 +13,7 @@
     require_once "../controllers/PortalObjectUpdateController.php";
 
     require_once "../RestAPI/PortalRestController.php";
+    require_once "../middlewares/LoginRequiredMiddleware.php";
 
     $url = $_SERVER['REQUEST_URI'];
 
@@ -42,10 +43,14 @@
 
     $router->add("/portal-character/(?P<id>\d+)", ObjectController::class); 
     $router->add("/search", SearchController::class);
-    $router->add("/create", PortalObjectCreateController::class);
-    $router->add("/types", PortalObjectTypesController::class);
-    //$router->add("/portal-character/(?P<id>\d+)/delete", PortalObjectDeleteController::class);
-    $router->add("/portal-character/(?P<id>\d+)/edit", PortalObjectUpdateController::class);
+    $router->add("/create", PortalObjectCreateController::class)
+        ->middleware(new LoginRequiredMiddleware());
+    $router->add("/types", PortalObjectTypesController::class)
+        ->middleware(new LoginRequiredMiddleware());
+    $router->add("/portal-character/(?P<id>\d+)/delete", PortalObjectDeleteController::class)
+        ->middleware(new LoginRequiredMiddleware());
+    $router->add("/portal-character/(?P<id>\d+)/edit", PortalObjectUpdateController::class)
+        ->middleware(new LoginRequiredMiddleware());
 
     $router->get_or_default(Controller404::class);
 ?>
